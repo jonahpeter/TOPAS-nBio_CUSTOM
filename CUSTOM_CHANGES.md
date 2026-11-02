@@ -2,6 +2,13 @@
 
 ## Here is a list of changes from vanilla TOPAS-nBio 3.0
 
+11/2/2026 fixed an integer type issue (changed 3/2 to 1.5 in GetDebyeHuckelA())
+        Affected File: TsIRTConfiguration.cc
+        Affected Function: GetDebyeHuckelA()
+
+11/2/2026 fixed the bug below.
+        Affected File: TsIRTConfiguration.cc
+        Affected Function: IonicRate()
 
 8/20/2026 - TEMPERATURE DEPENDENCE OF IONIC STRENGTH SCALING CURRENTLY ONLY WORKS AT 25C.
         - this is because the code uses a hard-coded version of the bronsted-bjerrum reaction rate equation that is only correct at 25C

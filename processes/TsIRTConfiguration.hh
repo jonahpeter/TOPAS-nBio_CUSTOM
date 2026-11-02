@@ -84,7 +84,7 @@ public:
 	
 	std::vector<G4double> GetH2SO4ComponentsConcentrationPH(G4double);
 	
-	G4double IonicRate(G4double, G4double, G4int, G4int);
+	//G4double IonicRate(G4double, G4double, G4int, G4int);
 	
 	G4double GetIonicStrength(std::vector<G4double>);
     
@@ -162,7 +162,7 @@ private:
 	G4int fTotalBinaryReaction;
 	G4int fLastMoleculeID;
 	
-	G4double fTemperature;
+	G4double fTemperature = 25.;
 	G4bool fScaleForTemperature;
 	G4bool fKick;
 	

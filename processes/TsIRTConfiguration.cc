@@ -2667,13 +2667,13 @@ G4double TsIRTConfiguration::GetIonicStrength(std::vector<G4double> Components) 
 }
 
 
-G4double TsIRTConfiguration::IonicRate(G4double IonicStrength, G4double Rate, G4int Charge1, G4int Charge2) {
-	G4double a = 0.15;
-	G4double b = a * Charge1 * Charge2;
-	G4double scaleFactor = pow(10,((1.02 * Charge1 * Charge2 * ((sqrt(IonicStrength)) / (1 + sqrt(IonicStrength))))  -  (2 * b * IonicStrength)));
-	G4double K = Rate * scaleFactor;
-	return K;
-}
+// G4double TsIRTConfiguration::IonicRate(G4double IonicStrength, G4double Rate, G4int Charge1, G4int Charge2) {
+// 	G4double a = 0.15;
+// 	G4double b = a * Charge1 * Charge2;
+// 	G4double scaleFactor = pow(10,((1.02 * Charge1 * Charge2 * ((sqrt(IonicStrength)) / (1 + sqrt(IonicStrength))))  -  (2 * b * IonicStrength)));
+// 	G4double K = Rate * scaleFactor;
+// 	return K;
+// }
 
 
 G4double TsIRTConfiguration::IonicRate(G4double IonicStrength, G4double Temperature, TsMolecularReaction Reaction) {
@@ -2683,9 +2683,8 @@ G4double TsIRTConfiguration::IonicRate(G4double IonicStrength, G4double Temperat
 	G4int BackGround = Reaction.reactionType;
 	G4double Rate = Reaction.kobs;
 	
-	G4double b = a * Charge1 * Charge2;
     G4double DebyeHuckelA = GetDebyeHuckelA(Temperature);
-	G4double scaleFactor = pow(10,((2 * DebyeHuckelA * Charge1 * Charge2 * ((sqrt(IonicStrength)) / (1 + sqrt(IonicStrength))))  -  (2 * b * IonicStrength)));
+	G4double scaleFactor = pow(10,(2 * DebyeHuckelA * Charge1 * Charge2 * (((sqrt(IonicStrength)) / (1 + sqrt(IonicStrength)))  -  2 * a * IonicStrength)));
 	G4double K = Rate * scaleFactor;
 	return K;
 }
@@ -2703,5 +2702,5 @@ G4double TsIRTConfiguration::GetDebyeHuckelA(G4double T_celsius) {
     G4double k_B = 1.38e-23; //Boltzmann constant
     G4double eps_r = GetDielectricConstant(T_celsius);
     G4double T_kelvin = T_celsius + 273.15;
-    return (sqrt(1000) / log(10)) * (sqrt(2) * pow(e,3) * sqrt(N_A)) / (8 * 3.14159 * pow(eps_r * eps_0 * k_B * T_kelvin,3/2));
+    return (sqrt(1000) / log(10)) * (sqrt(2) * pow(e,3) * sqrt(N_A)) / (8 * 3.14159 * pow(eps_r * eps_0 * k_B * T_kelvin,1.5));
 }
