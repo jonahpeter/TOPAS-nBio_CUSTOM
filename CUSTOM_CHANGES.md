@@ -2,6 +2,9 @@
 
 ## Here is a list of changes from vanilla TOPAS-nBio 3.0
 
+11/2/2026 initialized temperature to 25 C
+        Affected File: TsIRTConfiguration.hh
+
 11/2/2026 fixed an integer type issue (changed 3/2 to 1.5 in GetDebyeHuckelA())
         Affected File: TsIRTConfiguration.cc
         Affected Function: GetDebyeHuckelA()
