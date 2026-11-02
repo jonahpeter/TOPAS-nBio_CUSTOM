@@ -1,0 +1,331 @@
+\documentclass[aspectratio=1610]{beamer}
+\usepackage{graphicx}
+
+\graphicspath{{./openTOPAS/}}
+\DeclareRobustCommand\SUTname{TOPAS-nBio v3.0 (OpenTOPAS v4.0)}
+\DeclareRobustCommand\benchmarkname{TOPAS-nBio v2.0 (TOPAS v3.9)}
+
+
+\title{\SUTname}
+\subtitle{Regression testing (cf.\ \benchmarkname)}
+\author{Jos\'e Ramos-M\'endez, Naoki D. Kondo, and Thongchai A.M. Masilela}
+\institute{University of California San Francisco}
+\date{\today}
+
+\addtobeamertemplate{footnote}{\hskip -2em}{}
+%\let\footnoterule\relax
+%\renewcommand*{\thefootnote}{\fnsymbol{footnote}}
+%\let\oldfootnotesize\footnotesize
+%\renewcommand*{\footnotesize}{\oldfootnotesize\tiny}
+
+\begin{document}
+
+\frame{\titlepage}
+
+
+%\begin{frame}
+ % \frametitle{Table of contents}
+  %\tableofcontents
+%\end{frame}
+
+\newpage
+
+\section{Introduction}
+
+\begin{frame}{\secname}
+
+Welcome to the TOPAS-nBio regression test results!\vspace{5mm}
+
+This document depicts the results for 13 separate regression tests, comparing TOPAS-nBio v3.0 (the latest release which works with OpenTOPAS v4.0) to TOPAS-nBio v2.0.\vspace{5mm}
+
+Given the substantial changes to the code (see release notes), certain regression tests are not able to be performed in TOPAS-nBio v2.0. In these cases TOPAS-nBio v3.0 is simply compared against itself. The affected tests are as follows:\vspace{5mm}
+
+\begin{itemize}
+\item Fricke: IRT
+\item G-value of H$_2$O$_2$/H
+\item G-value and Temperature
+\item Nanodosimetry I/III
+\end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Table of Contents}
+\vspace{2mm}
+  \tableofcontents[sections={1-12}]
+    \framebreak
+  \tableofcontents[sections={13-}]
+\end{frame}
+
+\section{DBSCAN - TsEmDNAPhysics}
+
+\begin{frame}{\secname}
+ \begin{columns}
+  \begin{column}{0.4\linewidth}
+   \includegraphics[width=1.1\textwidth]{./DBSCAN/DBSCAN2_TsEmDNAPhysics}
+  \end{column}
+  \begin{column}{0.6\linewidth} 
+   \includegraphics[width=\textwidth]{./DBSCAN/DBSCAN1_TsEmDNAPhysics}
+  \end{column}
+ \end{columns}
+\begin{itemize}
+\item \tiny{Francis Z, Villagrasa C, Clairand I. Simulation of DNA damage clustering after proton irradiation using an adapted DBSCAN algorithm. \textit{Comput Methods Programs Biomed}. 2011; 101(3):265-270. doi:10.1016/j.cmpb.2010.12.012}
+\end{itemize}
+\end{frame}
+
+\section{DBSCAN - g4em-dna$\_$opt2}
+
+\begin{frame}{\secname}
+ \begin{columns}
+  \begin{column}{0.4\linewidth}
+   \includegraphics[width=1.1\textwidth]{./DBSCAN/DBSCAN2_g4em-dna_opt2}
+  \end{column}
+  \begin{column}{0.6\linewidth} 
+   \includegraphics[width=\textwidth]{./DBSCAN/DBSCAN1_g4em-dna_opt2}
+  \end{column}
+ \end{columns}
+\begin{itemize}
+\item \tiny{Francis Z, Villagrasa C, Clairand I. Simulation of DNA damage clustering after proton irradiation using an adapted DBSCAN algorithm. \textit{Comput Methods Programs Biomed}. 2011; 101(3):265-270. doi:10.1016/j.cmpb.2010.12.012}
+\end{itemize}
+\end{frame}
+
+\section{DBSCAN - g4em-dna$\_$opt4}
+
+\begin{frame}{\secname}
+ \begin{columns}
+  \begin{column}{0.4\linewidth}
+   \includegraphics[width=1.1\textwidth]{./DBSCAN/DBSCAN2_g4em-dna_opt4}
+  \end{column}
+  \begin{column}{0.6\linewidth} 
+   \includegraphics[width=\textwidth]{./DBSCAN/DBSCAN1_g4em-dna_opt4}
+  \end{column}
+ \end{columns}
+\begin{itemize}
+\item \tiny{Francis Z, Villagrasa C, Clairand I. Simulation of DNA damage clustering after proton irradiation using an adapted DBSCAN algorithm. \textit{Comput Methods Programs Biomed}. 2011; 101(3):265-270. doi:10.1016/j.cmpb.2010.12.012}
+\end{itemize}
+\end{frame}
+
+\section{DBSCAN - g4em-dna\_opt6}
+
+\begin{frame}{\secname}
+ \begin{columns}
+  \begin{column}{0.4\linewidth}
+   \includegraphics[width=1.1\textwidth]{./DBSCAN/DBSCAN2_g4em-dna_opt6}
+  \end{column}
+  \begin{column}{0.6\linewidth} 
+   \includegraphics[width=\textwidth]{./DBSCAN/DBSCAN1_g4em-dna_opt6}
+  \end{column}
+ \end{columns}
+\begin{itemize}
+\item \tiny{Francis Z, Villagrasa C, Clairand I. Simulation of DNA damage clustering after proton irradiation using an adapted DBSCAN algorithm. \textit{Comput Methods Programs Biomed}. 2011; 101(3):265-270. doi:10.1016/j.cmpb.2010.12.012}
+\end{itemize}
+\end{frame}
+
+\section{LET I}
+
+\begin{frame}{\secname}
+  \begin{columns}
+    \begin{column}{0.4\linewidth}
+     \includegraphics[width=\textwidth]{./LET/LET_TsEmDNAPhysics}
+    \end{column}
+    \begin{column}{0.4\linewidth} 
+     \includegraphics[width=\textwidth]{./LET/LET_g4em-dna_opt2}
+    \end{column}
+   \end{columns}
+\begin{itemize}
+\item \tiny{LET as a function of proton energy for TsEmDNAPhysics (left) and g4em-dna\_opt2 (right).}
+\end{itemize}
+\end{frame}
+
+\section{LET II}
+
+\begin{frame}{\secname}
+  \begin{columns}
+    \begin{column}{0.4\linewidth}
+     \includegraphics[width=\textwidth]{./LET/LET_g4em-dna_opt4}
+    \end{column}
+    \begin{column}{0.4\linewidth} 
+     \includegraphics[width=\textwidth]{./LET/LET_g4em-dna_opt6}
+    \end{column}
+   \end{columns}
+\begin{itemize}
+\item \tiny{LET as a function of proton energy for g4em-dna\_opt4 (left) and g4em-dna\_opt6 (right).}
+\end{itemize}
+\end{frame}
+
+\section{Fricke: IRT}
+
+\begin{frame}{\secname}
+ \centering
+  \includegraphics[width=0.75\textwidth]{./FrickeIRT/Gvalue}
+\end{frame}
+
+\section{G-value: step-by-step}
+
+\begin{frame}{\secname}
+ \centering
+   \includegraphics[width=0.75\textwidth]{./GvalueStepByStep/Gvalue}
+\begin{itemize}
+\item \tiny{The discrepancy between H yields can be attributed to a change that was made to the H$_2$O$^+$ and H$_2$O$^\ast$ dissociation displacements. There is a lack of experimental data in pure liquid water to conclude which graph is correct, correspondingly the H yield behavior was validated with a scavenging system, as shown in the "G-value of H: IRT" regression test.}
+\end{itemize}
+\end{frame}
+
+\section{G-value vs. LET: step-by-step}
+
+\begin{frame}{\secname}
+ \centering
+   \includegraphics[width=0.75\textwidth]{./Gvalue_LET-SBS/Gvalue_LET-SBS}
+\end{frame}
+
+\section{G-value: IRT}
+
+\begin{frame}{\secname}
+ \centering
+  \includegraphics[width=0.75\textwidth]{./GvalueIRT/GvalueIRT}
+\begin{itemize}
+\item \tiny{See footnote on page 12 for an explanation of the H yield discrepancy}
+\end{itemize}
+\end{frame}
+
+\section{G-value vs. LET: IRT}
+
+\begin{frame}{\secname}
+ \centering
+  \includegraphics[width=0.75\textwidth]{./Gvalue_LET-IRT/Gvalue_LET-IRT}
+\end{frame}
+
+\section{G-value of H$_2$O$_2$: IRT}
+
+\begin{frame}{\secname}
+ \centering
+  \includegraphics[width=0.6\textwidth]{./GvalueIRT_H2O2/TimeEvolution}
+\end{frame}
+
+\section{G-value of H: IRT}
+
+\begin{frame}{\secname}
+ \centering
+  \includegraphics[width=0.6\textwidth]{./GvalueIRT_H/TimeEvolution}
+\end{frame}
+
+
+\section{G-value and Temperature I: IRT}
+
+\begin{frame}{\secname}
+ \centering
+  \includegraphics[width=0.6\textwidth]{./GvalueIRT-Temperature/TimeEvolution}
+\begin{itemize}
+\item \tiny{See footnote on page 12 for an explanation of the H yield discrepancy}
+\end{itemize}
+\end{frame}
+
+\section{G-value and Temperature II: IRT}
+
+\begin{frame}{\secname}
+ \centering
+  \includegraphics[width=0.6\textwidth]{./GvalueIRT-Temperature/TemperatureEvolution}
+\end{frame}
+
+\section{Nanodosimetry I: TsEmDNAPhysics and g4em-dna\_opt2}
+
+\begin{frame}{\secname}
+  \begin{columns}
+    \begin{column}{0.4\linewidth}
+     \includegraphics[width=\textwidth]{./NanodosimetryI/IDDistribution_TsEmDNAPhysics}
+    \end{column}
+    \begin{column}{0.4\linewidth} 
+     \includegraphics[width=\textwidth]{./NanodosimetryI/IDDistribution_opt2}
+    \end{column}
+   \end{columns}
+\begin{itemize}
+\item \tiny{Conte V, Selva A, Colautti P, et al., Nanodosimetry: Towards a new concept of radiation quality. \textit{Radiat Prot Dosimetry}. 2018;180(1-4):150-156. doi:10.1093/rpd/ncx175}
+\end{itemize}
+\end{frame}
+
+\section{Nanodosimetry I: g4em-dna\_opt4 and g4em-dna\_opt6}
+
+\begin{frame}{\secname}
+  \begin{columns}
+    \begin{column}{0.4\linewidth}
+     \includegraphics[width=\textwidth]{./NanodosimetryI/IDDistribution_opt4}
+    \end{column}
+    \begin{column}{0.4\linewidth} 
+     \includegraphics[width=\textwidth]{./NanodosimetryI/IDDistribution_opt6}
+    \end{column}
+   \end{columns}
+\begin{itemize}
+\item \tiny{Conte V, Selva A, Colautti P, et al., Nanodosimetry: Towards a new concept of radiation quality. \textit{Radiat Prot Dosimetry}. 2018;180(1-4):150-156. doi:10.1093/rpd/ncx175}
+\end{itemize}
+\end{frame}
+
+\section{Nanodosimetry II: TsEmDNAPhysics and g4em-dna\_opt2}
+
+\begin{frame}{\secname}
+  \begin{columns}
+    \begin{column}{0.4\linewidth}
+     \includegraphics[width=\textwidth]{./NanodosimetryII/nanoII_TsEMDNAPhysics}
+    \end{column}
+    \begin{column}{0.4\linewidth} 
+     \includegraphics[width=\textwidth]{./NanodosimetryII/nanoII_opt2}
+    \end{column}
+   \end{columns}
+\begin{itemize}
+\item \tiny{Conte V, Selva A, Colautti P, et al., Nanodosimetry: Towards a new concept of radiation quality. \textit{Radiat Prot Dosimetry}. 2018;180(1-4):150-156. doi:10.1093/rpd/ncx175}
+\end{itemize}
+\end{frame}
+
+\section{Nanodosimetry II: g4em-dna\_opt4 and g4em-dna\_opt6}
+
+\begin{frame}{\secname}
+  \begin{columns}
+    \begin{column}{0.4\linewidth}
+     \includegraphics[width=\textwidth]{./NanodosimetryII/nanoII_opt4}
+    \end{column}
+    \begin{column}{0.4\linewidth} 
+     \includegraphics[width=\textwidth]{./NanodosimetryII/nanoII_opt6}
+    \end{column}
+   \end{columns}
+\begin{itemize}
+\item \tiny{Conte V, Selva A, Colautti P, et al., Nanodosimetry: Towards a new concept of radiation quality. \textit{Radiat Prot Dosimetry}. 2018;180(1-4):150-156. doi:10.1093/rpd/ncx175}
+\end{itemize}
+\end{frame}
+
+\section{Nanodosimetry III: TsEmDNAPhysics}
+
+\begin{frame}{\secname}
+ \centering
+   \includegraphics[width=0.75\textwidth]{./NanodosimetryIII/nanoIII_TsEMDNAPhysics}
+\begin{itemize}
+ \item \tiny{Ramos-M\'endez J, Burigo LN, Schulte R, Chuang C, Faddegon B. Fast calculation of nanodosimetric quantities in treatment planning of proton and ion therapy. \textit{Phys Med Biol.} 2018;63(23):235015. doi:10.1088/1361-6560/aaeeee}
+\end{itemize}
+\end{frame}
+
+\section{Nanodosimetry III: g4em-dna\_opt2}
+
+\begin{frame}{\secname}
+ \centering
+   \includegraphics[width=0.75\textwidth]{./NanodosimetryIII/nanoIII_opt2}
+\begin{itemize}
+ \item \tiny{Ramos-M\'endez J, Burigo LN, Schulte R, Chuang C, Faddegon B. Fast calculation of nanodosimetric quantities in treatment planning of proton and ion therapy. \textit{Phys Med Biol.} 2018;63(23):235015. doi:10.1088/1361-6560/aaeeee}
+\end{itemize}
+\end{frame}
+
+\section{Nanodosimetry III: g4em-dna\_opt4}
+
+\begin{frame}{\secname}
+ \centering
+   \includegraphics[width=0.75\textwidth]{./NanodosimetryIII/nanoIII_opt4}
+\begin{itemize}
+ \item \tiny{Ramos-M\'endez J, Burigo LN, Schulte R, Chuang C, Faddegon B. Fast calculation of nanodosimetric quantities in treatment planning of proton and ion therapy. \textit{Phys Med Biol.} 2018;63(23):235015. doi:10.1088/1361-6560/aaeeee}
+\end{itemize}
+\end{frame}
+
+\section{Nanodosimetry III: g4em-dna\_opt6}
+
+\begin{frame}{\secname}
+ \centering
+   \includegraphics[width=0.75\textwidth]{./NanodosimetryIII/nanoIII_opt6}
+\begin{itemize}
+ \item \tiny{Ramos-M\'endez J, Burigo LN, Schulte R, Chuang C, Faddegon B. Fast calculation of nanodosimetric quantities in treatment planning of proton and ion therapy. \textit{Phys Med Biol.} 2018;63(23):235015. doi:10.1088/1361-6560/aaeeee}
+\end{itemize}
+\end{frame}
+
+\end{document}
