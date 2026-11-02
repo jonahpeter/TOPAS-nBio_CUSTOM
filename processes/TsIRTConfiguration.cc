@@ -321,10 +321,23 @@ fKick(false), fAllTotallyDiffusionControlled(false)
 	
 	if ( fPm->ParameterExists("Ch/"+chemistryList+"/ModelAcidPropertiesFromSubstance") ) {
 		fpHSolventConcentration = 0.0;
-		fpHValue                = 7.1;
+        fpHValue                = 7.1;
 		
 		fpHSolvent = fPm->GetStringParameter("Ch/"+chemistryList+"/ModelAcidPropertiesFromSubstance");
 		G4StrUtil::to_lower(fpHSolvent);
+        
+        if (fpHSolvent == "generic"){
+            if (fPm->ParameterExists("Ch/"+chemistryList+"/ModelAcidPropertiesWithConcentration")){
+                G4String message = "Cannot be defined when parameter: Ch/" + chemistryList + "/ModelAcidPropertiesFromSubstance is Generic.";
+                Quit("Ch/"+chemistryList+"/ModelAcidPropertiesWithConcentration",message);
+            }
+            if (!(fPm->ParameterExists("Ch/"+chemistryList+"/ModelAcidPropertiesWithpH"))){
+                G4String message = "Must be defined when parameter: Ch/" + chemistryList + "/ModelAcidPropertiesFromSubstance is Generic.";
+                Quit("Ch/"+chemistryList+"/ModelAcidPropertiesWithpH",message);
+            }
+        }
+        
+        
 		if (fPm->ParameterExists("Ch/"+chemistryList+"/ModelAcidPropertiesWithConcentration") &&
 			fPm->ParameterExists("Ch/"+chemistryList+"/ModelAcidPropertiesWithpH")) {
 			G4String message = "Cannot be defined when parameter: Ch/" + chemistryList + "/ModelAcidPropertiesWithConcentration is used.";
@@ -1299,28 +1312,36 @@ void TsIRTConfiguration::InsertBackgroundReaction(G4String A, G4String B, std::v
 
 void TsIRTConfiguration::AdjustReactionAndDiffusionRateForTemperature() {
 	std::map<G4String, std::pair<G4String,G4String>> ReactionLabels;
-	std::map<G4String, G4double> DefaultValues;
+	std::map<G4String, G4double> DefaultKobs;
+    std::map<G4String, G4double> DefaultKact;
+    std::map<G4String, G4double> DefaultKdif;
+    
+    G4cout << G4endl;
+    G4cout << " ###-------------- Temperature Scaling Starts -------------###" << G4endl;
+    G4cout << " -- Temperature set to: " << fTemperature << " C" << G4endl;
+    G4cout << G4endl;
+    
+    G4cout << " -- Reaction Rates Are Being Scaled For Temperature" << G4endl;
+    G4cout << G4endl;
 
+    // 10 reactions supported for temperature scaling
 	ReactionLabels["R1"]  = std::make_pair("e_aq^-1","e_aq^-1");
-	DefaultValues["R1"]   = 5.5e9;
 	ReactionLabels["R2"]  = std::make_pair("e_aq^-1","H3O^1");
-    DefaultValues["R2"]   = 2.3e10;
 	ReactionLabels["R3"]  = std::make_pair("e_aq^-1","H^0");
-    DefaultValues["R3"]   = 2.5e10;
 	ReactionLabels["R4"]  = std::make_pair("e_aq^-1","OH^0");
-    DefaultValues["R4"]   = 3.0e10;
 	ReactionLabels["R5"]  = std::make_pair("e_aq^-1","H2O2^0");
-    DefaultValues["R5"]   = 1.1e10;
 	ReactionLabels["R6"]  = std::make_pair("H3O^1",  "OH^-1");
-    DefaultValues["R6"]   = 14.3e10;
 	ReactionLabels["R7"]  = std::make_pair("H^0",    "H^0");
-	DefaultValues["R7"]   = 7.8e9;
 	ReactionLabels["R8"]  = std::make_pair("OH^0",   "H^0");
-	DefaultValues["R8"]   = 1.55e10;
 	ReactionLabels["R9"]  = std::make_pair("H^0",    "H2O2^0");
-	DefaultValues["R9"]   = 9.0e7;
 	ReactionLabels["R10"] = std::make_pair("OH^0",   "OH^0");
-	DefaultValues["R10"]  = 5.5e9;
+    
+    
+    G4double DOH_25C = fMoleculesDefinition[fMoleculesID[fExistingMolecules["hydroxyl"]]].diffusionCoefficient / (m*m/s);
+        
+    G4double DH2O2_25C = fMoleculesDefinition[fMoleculesID[fExistingMolecules["hydrogenperoxide"]]].diffusionCoefficient / (m*m/s);
+    
+    G4double DH_25C = fMoleculesDefinition[fMoleculesID[fExistingMolecules["hydrogen"]]].diffusionCoefficient / (m*m/s);
 
 	for(size_t i = 0; i < fReactions.size(); i++) {
 		G4double radiusA = fMoleculesDefinition[fReactions[i].reactorA].radius / m;
@@ -1336,143 +1357,184 @@ void TsIRTConfiguration::AdjustReactionAndDiffusionRateForTemperature() {
 		G4double refKdif = -1;
 		G4double refKact = -1;
 
-		G4double factor  = -1;
+		G4double kobs_factor  = 0;
+        G4double kdif_factor  = 0;
+        G4double kact_factor  = 0;
 
 		G4int type = fReactions[i].reactionType;
 
 		G4bool Found = false;
 		if ((ReactA == ReactionLabels["R1"].first  && ReactB == ReactionLabels["R1"].second) ||
 			(ReactA == ReactionLabels["R1"].second && ReactB == ReactionLabels["R1"].first)) {
+            DefaultKobs["R1"]   = fReactions[i].kobs / fPm->GetUnitValue("/M/s");
 			newKobs = 2*fUtils->ArrheniusFunction(2.33E13, fTemperature+273.15, 20.3);
 			refKobs = 2*fUtils->ArrheniusFunction(2.33E13, 298.15, 20.3);
-			factor  = 2*DefaultValues["R1"] / (refKobs);
+			kobs_factor  = DefaultKobs["R1"] / (refKobs);
 			Found = true;
 		}
 
 		else if ((ReactA == ReactionLabels["R2"].first  && ReactB == ReactionLabels["R2"].second) ||
 			     (ReactA == ReactionLabels["R2"].second && ReactB == ReactionLabels["R2"].first)) {
+            DefaultKobs["R2"]   = fReactions[i].kobs / fPm->GetUnitValue("/M/s");
+            DefaultKact["R2"]   = fReactions[i].kact / fPm->GetUnitValue("/M/s");
+            DefaultKdif["R2"]   = fReactions[i].kdif / fPm->GetUnitValue("/M/s");
 			G4double R = radiusA + radiusB;
+            G4double D = fUtils->ElectronDiffusionRate(25.) + fUtils->H3ODiffusionRate(298.15);
 			G4double Da = fUtils->ElectronDiffusionRate(fTemperature);
 			G4double Db = fUtils->H3ODiffusionRate(fTemperature+273.15);
 			newKobs = fUtils->ArrheniusFunction(1.24E12,fTemperature+273.15,10.1);
 			newKdif = fUtils->DebyeFunction(1, R, Da+Db, fTemperature, -1, 1);
 			newKact = fUtils->NoyesRelationship(newKobs, 0, newKdif);
 			refKobs = fUtils->ArrheniusFunction(1.24E12,298.15,10.1);
-			factor  = DefaultValues["R2"] / refKobs;
+            refKdif = fUtils->DebyeFunction(1, R, D, 25., -1, 1);
+            refKact = fUtils->NoyesRelationship(refKobs, 0, refKdif);
+			kobs_factor  = DefaultKobs["R2"] / refKobs;
+            kact_factor = DefaultKact["R2"] / refKact;
+            kdif_factor = DefaultKdif["R2"] / refKdif;
 			Found = true;
 		}
 
 		else if ((ReactA == ReactionLabels["R3"].first  && ReactB == ReactionLabels["R3"].second) ||
 			     (ReactA == ReactionLabels["R3"].second && ReactB == ReactionLabels["R3"].first)) {
+            DefaultKobs["R3"]   = fReactions[i].kobs / fPm->GetUnitValue("/M/s");
 			newKobs = fUtils->ArrheniusFunction(7.52E12, fTemperature+273.15, 14.0);
 			refKobs = fUtils->ArrheniusFunction(7.52E12, 298.15, 14.0);
-			factor  = DefaultValues["R3"] / refKobs;
+			kobs_factor  = DefaultKobs["R3"] / refKobs;
 			Found = true;
 		}
 
 		else if ((ReactA == ReactionLabels["R4"].first  && ReactB == ReactionLabels["R4"].second) ||
 			     (ReactA == ReactionLabels["R4"].second && ReactB == ReactionLabels["R4"].first)) {
+            DefaultKobs["R4"]   = fReactions[i].kobs / fPm->GetUnitValue("/M/s");
+            DefaultKact["R4"]   = fReactions[i].kact / fPm->GetUnitValue("/M/s");
+            DefaultKdif["R4"]   = fReactions[i].kdif / fPm->GetUnitValue("/M/s");
 			G4double R = radiusA + radiusB;
-			G4double D = fUtils->ElectronDiffusionRate(25.) + 2.3E-9;
+			G4double D = fUtils->ElectronDiffusionRate(25.) + DOH_25C;
 			G4double Da = fUtils->ElectronDiffusionRate(fTemperature);
-			G4double Db = fUtils->WaterDiffusionRate(fTemperature+273.15,2.3E-9);
+			G4double Db = fUtils->WaterDiffusionRate(fTemperature+273.15,DOH_25C);
 			newKact = fUtils->ArrheniusFunction(3.04E10, fTemperature+273.15, -3.5);
 			newKdif = fUtils->SmoluchowskiFunction(1, R, Da+Db);
 			newKobs = fUtils->NoyesRelationship(0, newKact, newKdif);
 			refKact = fUtils->ArrheniusFunction(3.04E10, 298.15, -3.5);
 			refKdif = fUtils->SmoluchowskiFunction(1, R, D);
 			refKobs = fUtils->NoyesRelationship(0,refKact,refKdif);
-			factor  = DefaultValues["R4"] / refKobs;
+			kobs_factor  = DefaultKobs["R4"] / refKobs;
+            kact_factor = DefaultKact["R4"] / refKact;
+            kdif_factor = DefaultKdif["R4"] / refKdif;
 			Found = true;
 		}
 
 		else if ((ReactA == ReactionLabels["R5"].first  && ReactB == ReactionLabels["R5"].second) ||
 			     (ReactA == ReactionLabels["R5"].second && ReactB == ReactionLabels["R5"].first)) {
+            DefaultKobs["R5"]   = fReactions[i].kobs / fPm->GetUnitValue("/M/s");
+            DefaultKact["R5"]   = fReactions[i].kact / fPm->GetUnitValue("/M/s");
+            DefaultKdif["R5"]   = fReactions[i].kdif / fPm->GetUnitValue("/M/s");
 			G4double R = radiusA + radiusB;
-			G4double D = fUtils->ElectronDiffusionRate(25.) + 2.3E-9;
+			G4double D = fUtils->ElectronDiffusionRate(25.) + DH2O2_25C;
 			G4double Da = fUtils->ElectronDiffusionRate(fTemperature);
-			G4double Db = fUtils->WaterDiffusionRate(fTemperature+273.15,2.3E-9);
+			G4double Db = fUtils->WaterDiffusionRate(fTemperature+273.15,DH2O2_25C);
 			newKact = fUtils->ArrheniusFunction(6.26E12, fTemperature+273.15, 14.0);
 			newKdif = fUtils->SmoluchowskiFunction(1, R, Da+Db);
 			newKobs = fUtils->NoyesRelationship(0, newKact, newKdif);
 			refKact = fUtils->ArrheniusFunction(6.26E12, 298.15, 14.0);
 			refKdif = fUtils->SmoluchowskiFunction(1, R, D);
 			refKobs = fUtils->NoyesRelationship(0,refKact,refKdif);
-			factor  = DefaultValues["R5"] / refKobs;
+			kobs_factor  = DefaultKobs["R5"] / refKobs;
+            kact_factor  = DefaultKact["R5"] / refKact;
+            kdif_factor  = DefaultKdif["R5"] / refKdif;
 			Found = true;
 		}
 
 		else if ((ReactA == ReactionLabels["R6"].first  && ReactB == ReactionLabels["R6"].second) ||
 			     (ReactA == ReactionLabels["R6"].second && ReactB == ReactionLabels["R6"].first)) {
+            DefaultKobs["R6"]   = fReactions[i].kobs / fPm->GetUnitValue("/M/s");
 			G4double R = radiusA + radiusB;
 			G4double D = fUtils->H3ODiffusionRate(298.15) + fUtils->OHmDiffusionRate(298.15);//diffusionA + diffusionB;
 			G4double Da = fUtils->H3ODiffusionRate(fTemperature+273.15);
 			G4double Db = fUtils->OHmDiffusionRate(fTemperature+273.15);
 			newKobs = fUtils->DebyeFunction(1, R, Da+Db, fTemperature, 1, -1);
 			refKobs = fUtils->DebyeFunction(1, R, D, 25.,-1,1);
-			factor  = DefaultValues["R6"] / refKobs;
+			kobs_factor  = DefaultKobs["R6"] / refKobs;
 			Found = true;
 		}
 
 		else if ((ReactA == ReactionLabels["R7"].first  && ReactB == ReactionLabels["R7"].second) ||
 			     (ReactA == ReactionLabels["R7"].second && ReactB == ReactionLabels["R7"].first)) {
+            DefaultKobs["R7"]   = fReactions[i].kobs / fPm->GetUnitValue("/M/s");
 			G4double R = radiusA + radiusB;
-			G4double Da = fUtils->WaterDiffusionRate(fTemperature+273.15,8.0E-9);
+			G4double Da = fUtils->WaterDiffusionRate(fTemperature+273.15,DH_25C);
 			newKobs = 2*fUtils->SmoluchowskiFunction(1, R, 2*Da);
-			refKobs = 2*fUtils->SmoluchowskiFunction(1, R, 1.6E-8);
-			factor  = 2*DefaultValues["R7"] / (refKobs);
+			refKobs = 2*fUtils->SmoluchowskiFunction(1, R, 2*DH_25C);
+			kobs_factor  = DefaultKobs["R7"] / (refKobs);
 			Found = true;
 		}
 
 		else if ((ReactA == ReactionLabels["R8"].first  && ReactB == ReactionLabels["R8"].second) ||
 			     (ReactA == ReactionLabels["R8"].second && ReactB == ReactionLabels["R8"].first)) {
+            DefaultKobs["R8"]   = fReactions[i].kobs / fPm->GetUnitValue("/M/s");
+            DefaultKact["R8"]   = fReactions[i].kact / fPm->GetUnitValue("/M/s");
+            DefaultKdif["R8"]   = fReactions[i].kdif / fPm->GetUnitValue("/M/s");
 			G4double R = radiusA + radiusB;
-			G4double Da = fUtils->WaterDiffusionRate(fTemperature+273.15,8.0E-9);
-			G4double Db = fUtils->WaterDiffusionRate(fTemperature+273.15,2.3E-9);
+			G4double Da = fUtils->WaterDiffusionRate(fTemperature+273.15,DH_25C);
+			G4double Db = fUtils->WaterDiffusionRate(fTemperature+273.15,DOH_25C);
 			newKact = fUtils->ArrheniusFunction(0.178E12, fTemperature+273.15, 4.5);
 			newKdif = fUtils->SmoluchowskiFunction(1, R, Da+Db);
 			newKobs = fUtils->NoyesRelationship(0,newKact,newKdif);
 			refKact = fUtils->ArrheniusFunction(0.178E12, 298.15, 4.5);
-			refKdif = fUtils->SmoluchowskiFunction(1, R, 10.3E-9);
+			refKdif = fUtils->SmoluchowskiFunction(1, R, DH_25C+DOH_25C);
 			refKobs = fUtils->NoyesRelationship(0,refKact,refKdif);
-			factor  = DefaultValues["R8"] / refKobs;
+			kobs_factor  = DefaultKobs["R8"] / refKobs;
+            kact_factor  = DefaultKact["R8"] / refKact;
+            kdif_factor  = DefaultKdif["R8"] / refKdif;
 			Found = true;
 		}
 
 		else if ((ReactA == ReactionLabels["R9"].first  && ReactB == ReactionLabels["R9"].second) ||
 			     (ReactA == ReactionLabels["R9"].second && ReactB == ReactionLabels["R9"].first)) {
+            DefaultKobs["R9"]   = fReactions[i].kobs / fPm->GetUnitValue("/M/s");
+            DefaultKact["R9"]   = fReactions[i].kact / fPm->GetUnitValue("/M/s");
+            DefaultKdif["R9"]   = fReactions[i].kdif / fPm->GetUnitValue("/M/s");
 			G4double R = radiusA + radiusB;
-			G4double Da = fUtils->WaterDiffusionRate(fTemperature+273.15,8.0E-9);
-			G4double Db = fUtils->WaterDiffusionRate(fTemperature+273.15,2.3E-9);
+			G4double Da = fUtils->WaterDiffusionRate(fTemperature+273.15,DH_25C);
+			G4double Db = fUtils->WaterDiffusionRate(fTemperature+273.15,DH2O2_25C);
 			newKobs = fUtils->ArrheniusFunction(3.21E10, fTemperature+273.15, 15.94);
 			newKdif = fUtils->SmoluchowskiFunction(1, R, Da+Db);
 			newKact = fUtils->NoyesRelationship(newKobs, 0, newKdif);
 			refKobs = fUtils->ArrheniusFunction(3.21E10, 298.15, 15.94);
-			factor  = DefaultValues["R9"] / refKobs;
+            refKdif = fUtils->SmoluchowskiFunction(1, R, DH_25C+DH2O2_25C);
+            refKact = fUtils->NoyesRelationship(refKobs, 0, refKdif);
+			kobs_factor  = DefaultKobs["R9"] / refKobs;
+            kact_factor  = DefaultKact["R9"] / refKact;
+            kdif_factor  = DefaultKdif["R9"] / refKdif;
 			Found = true;
 		}
 
 		else if ((ReactA == ReactionLabels["R10"].first  && ReactB == ReactionLabels["R10"].second) ||
 			     (ReactA == ReactionLabels["R10"].second && ReactB == ReactionLabels["R10"].first)) {
+            DefaultKobs["R10"]   = fReactions[i].kobs / fPm->GetUnitValue("/M/s");
 			G4double R = radiusA + radiusB;
-			G4double Da = fUtils->WaterDiffusionRate(fTemperature+273.15,2.3E-9);
+			G4double Da = fUtils->WaterDiffusionRate(fTemperature+273.15,DOH_25C);
 			newKact = fUtils->ArrheniusFunction(3.69E10, fTemperature+273.15, 3);
 			newKdif = fUtils->SmoluchowskiFunction(1, R, 2*Da)/2;
 			newKobs = fUtils->NoyesRelationship(0,newKact,newKdif);
 			refKact = fUtils->ArrheniusFunction(3.69E10, 298.15, 3);
-			refKdif = fUtils->SmoluchowskiFunction(1, R, 4.6E-9)/2;
+			refKdif = fUtils->SmoluchowskiFunction(1, R, 2*DOH_25C)/2;
 			refKobs = fUtils->NoyesRelationship(0,refKact,refKdif);
 			newKdif = -1;
 			newKact = -1;
-			factor  = DefaultValues["R10"] / refKobs;
+			kobs_factor  = DefaultKobs["R10"] / refKobs;
 			Found = true;
 		}
 
-		if (fKick == true)
-			newKobs = newKobs * factor;
 
-		if (Found) {
+		if (Found) { // if one of the supported reactions for temp. scaling (otherwise do nothing)
 			if (type != 6) {
+                
+                if (fKick == true){ // when True, non Type 6 reactions scaled from user input values
+                    newKobs = newKobs * kobs_factor;
+                    newKact = newKact * kact_factor;
+                    newKdif = newKdif * kdif_factor;
+                }
 				if (newKobs > 0)
 					fReactions[i].kobs = newKobs * fPm->GetUnitValue("/M/s");
 				if (newKact > 0)
@@ -1480,40 +1542,90 @@ void TsIRTConfiguration::AdjustReactionAndDiffusionRateForTemperature() {
 				if (newKdif > 0)
 					fReactions[i].kdif = newKdif * fPm->GetUnitValue("/M/s");
 			}
+            else { // Type 6 reactions always scaled from user input values
+                fReactions[i].scavengingCapacity = newKobs * (fReactions[i].scavengingCapacity / refKobs);
+            }
 		}
-		else {
-			fReactions[i].kobs = newKobs * fPm->GetUnitValue("/M/s");
-			fReactions[i].scavengingCapacity = newKobs * (fReactions[i].scavengingCapacity / refKobs);
-		}
+        
+        
+        // Print scaled reaction rates
+        std::vector<G4String> products;
+        for (size_t vsize = 0; vsize < fReactions[i].products.size(); vsize++){
+            products.push_back(fMoleculesName[fReactions[i].products[vsize]]);
+        }
+        G4double K_previous = 0;
+        
+        if (type != 6){
+            K_previous = kobs_factor * refKobs;
+        }
+        else {
+            K_previous = fReactions[i].scavengingCapacity * (refKobs / newKobs) / (1/s);
+        }
+
+        G4cout << " Reaction Type: " << fReactions[i].reactionType << " | Reaction: " << ReactA << " + " << ReactB;
+        for (int prod = 0; prod < (int)products.size(); prod++) {
+            if (prod == 0)
+                G4cout << " -> ";
+            G4cout << products[prod];
+            if (prod < (int)products.size() - 1) {
+                G4cout << " + ";
+            }
+        }
+        if ( fReactions[i].reactionType == 6 )
+            G4cout << G4endl << " ---- scav: " << K_previous << " ---> "  << fReactions[i].scavengingCapacity / (1/s) << G4endl << G4endl;
+        else
+            G4cout << G4endl << " ---- kobs: " << K_previous << " ---> "  << fReactions[i].kobs / fPm->GetUnitValue("/M/s") << G4endl << G4endl;
+        
 	}
 
+    G4cout << " -- Diffusion Coefficients Are Being Scaled For Temperature" << G4endl;
+    G4cout << G4endl;
+    
 	for (auto& IndexAndMolDef:fMoleculesDefinition) {
 		G4int Index                 = IndexAndMolDef.first;
 		G4String MolName            = fMoleculesName[Index];
+        
+        G4double Diff_before = fMoleculesDefinition[Index].diffusionCoefficient / (m*m/s);
+        G4double Diff = -1;
+        G4double Diff_ref = -1;
+        G4double Diff_ratio = 1;
 
-		if (MolName == "e_aq^-1") {
-			G4double Diff = fUtils->ElectronDiffusionRate(fTemperature);
+		if (MolName == "e_aq^-1") { // temp in celcius for electrons (see TsIRTUtils.cc)
+            Diff_ref = fUtils->ElectronDiffusionRate(25);
+            Diff_ratio = Diff_before / Diff_ref;
+            Diff = Diff_ratio * fUtils->ElectronDiffusionRate(fTemperature);
 			fMoleculesDefinition[Index].diffusionCoefficient = Diff * (m*m/s);
 		} else if (MolName == "H3O^1") {
-			G4double Diff = fUtils->H3ODiffusionRate(fTemperature+273.15);
+            Diff_ref = fUtils->H3ODiffusionRate(298.15);
+            Diff_ratio = Diff_before / Diff_ref;
+			Diff = Diff_ratio * fUtils->H3ODiffusionRate(fTemperature+273.15);
 			fMoleculesDefinition[Index].diffusionCoefficient = Diff * (m*m/s);
 		} else if (MolName == "OH^-1") {
-			G4double Diff = fUtils->OHmDiffusionRate(fTemperature+273.15);
+            Diff_ref = fUtils->OHmDiffusionRate(298.15);
+            Diff_ratio = Diff_before / Diff_ref;
+			Diff = Diff_ratio * fUtils->OHmDiffusionRate(fTemperature+273.15);
 			fMoleculesDefinition[Index].diffusionCoefficient = Diff * (m*m/s);
 		} else if (MolName == "OH^0") {
-			G4double Diff = fUtils->WaterDiffusionRate(fTemperature+273.15,2.3E-9);
+			Diff = fUtils->WaterDiffusionRate(fTemperature+273.15,Diff_before);
 			fMoleculesDefinition[Index].diffusionCoefficient = Diff * (m*m/s);
 		} else if (MolName == "H^0") {
-			G4double Diff = fUtils->WaterDiffusionRate(fTemperature+273.15,8.0E-9);
+			Diff = fUtils->WaterDiffusionRate(fTemperature+273.15,Diff_before);
 			fMoleculesDefinition[Index].diffusionCoefficient = Diff * (m*m/s);
 		} else if (MolName == "H_2^0") {
-			G4double Diff = fUtils->WaterDiffusionRate(fTemperature+273.15,4.8E-9);
+			Diff = fUtils->WaterDiffusionRate(fTemperature+273.15,Diff_before);
 			fMoleculesDefinition[Index].diffusionCoefficient = Diff * (m*m/s);
 		} else if (MolName == "H2O2^0") {
-			G4double Diff = fUtils->WaterDiffusionRate(fTemperature+273.15,2.3E-9);
+			Diff = fUtils->WaterDiffusionRate(fTemperature+273.15,Diff_before);
 			fMoleculesDefinition[Index].diffusionCoefficient = Diff * (m*m/s);
 		}
+        else continue;
+        
+        // Print scaled diffusion coefficeints
+        G4cout << MolName << ": " << Diff_before << " ---> " << Diff << " (m2/s)" <<G4endl;
 	}
+    
+    G4cout << G4endl;
+    G4cout << " ###-------------- Temperature Scaling Ends ---------------###" << G4endl;
 }
 
 void TsIRTConfiguration::AdjustReactionRateForPH(G4String pHOrConcentration) {
@@ -1524,6 +1636,9 @@ void TsIRTConfiguration::AdjustReactionRateForPH(G4String pHOrConcentration) {
 	G4double OHCon   = 0.0;
 	G4double OHCon25 = 1.00E-7;
 	G4double HSO4Con = 0.0;
+    
+    G4cout << G4endl;
+    G4cout << " ###-------- pH And Ionic Strength Scaling Starts ---------###" << G4endl;
 	
 	if (pHOrConcentration == "PH" && fpHSolvent == "h2so4") {
 		AcidComponents = GetH2SO4ComponentsConcentrationPH(fpHValue);
@@ -1532,6 +1647,7 @@ void TsIRTConfiguration::AdjustReactionRateForPH(G4String pHOrConcentration) {
 		HSO4Con        = AcidComponents[1];
 		OHCon          = AcidComponents[3];
 		G4cout << "-- Adjust for PH of H2SO4 " << G4endl;
+        G4cout << " -- pH set to: " << fpHValue << G4endl;
 		
 	}
 	
@@ -1542,6 +1658,7 @@ void TsIRTConfiguration::AdjustReactionRateForPH(G4String pHOrConcentration) {
 		HSO4Con        = AcidComponents[1];
 		OHCon          = AcidComponents[3];
 		G4cout << "-- Adjust for Concentration of H2SO4 " << G4endl;
+        G4cout << " -- Concentration set to: " << fpHSolventConcentration << G4endl;
 	}
 	
 	else if (fpHSolvent == "generic") {
@@ -1549,7 +1666,9 @@ void TsIRTConfiguration::AdjustReactionRateForPH(G4String pHOrConcentration) {
 		OHCon = 1E-14 / HCon;
 		AcidComponents = {HCon, 0.0, 0.0, OHCon, 0.0, 0.0};
 		Ionic          = GetIonicStrength(AcidComponents);
-		G4cout << "-- Adjust for a generic substance " << G4endl;
+		G4cout << " -- Adjust for a generic substance " << G4endl;
+        G4cout << " -- pH set to: " << fpHValue << G4endl;
+
 		
 	} else {
 		G4cout << "-- Is doing nothing " << pHOrConcentration << " " << fpHSolvent << G4endl;
@@ -1571,9 +1690,25 @@ void TsIRTConfiguration::AdjustReactionRateForPH(G4String pHOrConcentration) {
 	 AcidComponents = {HCon, 0.0, 0.0, OHCon, 0.0, 0.0};
 	 Ionic          = GetIonicStrength(AcidComponents);
 	 }*/
-	
-	G4cout << G4endl;
-	G4cout << " ###-------- pH Scaling Starts ---------###" << G4endl;
+
+    
+    // User can define the ionic strength independently
+    G4String chemistryList = fPm->GetStringParameter("Ch/ChemistryName");
+    G4String parName = "Ch/" + chemistryList + "/IonicStrength";
+    if (fPm->ParameterExists(parName)){
+        Ionic = fPm->GetUnitlessParameter(parName); //overwrite internal ionic strength calculation
+        
+        G4cout << G4endl;
+        G4cout << " -- Ionic Strength Set Independently!" << G4endl;
+    }
+    else {
+        G4cout << G4endl;
+        G4cout << " -- Ionic Strength Set Automatically" << G4endl;
+    }
+    
+    G4cout << " -- Ionic strength set to: " << Ionic << " M" << G4endl;
+    G4cout << G4endl;
+    
 	
 	for(size_t i = 0; i < fReactions.size(); i++) {
 		G4int chargeA   = fMoleculesDefinition[fReactions[i].reactorA].charge;
@@ -1582,6 +1717,7 @@ void TsIRTConfiguration::AdjustReactionRateForPH(G4String pHOrConcentration) {
 		G4String ReactB = fMoleculesName[fReactions[i].reactorB];
 		std::vector<G4String> products;
 		G4double k_Before = 0;
+        G4double concentration = 0;
 		
 		for (size_t vsize = 0; vsize < fReactions[i].products.size(); vsize++){
 			products.push_back(fMoleculesName[fReactions[i].products[vsize]]);
@@ -1593,27 +1729,33 @@ void TsIRTConfiguration::AdjustReactionRateForPH(G4String pHOrConcentration) {
 		if ((chargeA != 0 && chargeB != 0) && (!(ReactA == "e_aq^-1" && ReactB == "e_aq^-1"))) {
 			if (fReactions[i].reactionType != 6) {
 				k_Before = fReactions[i].kobs;
-				fReactions[i].kobs = IonicRate(Ionic, fReactions[i]);
+				fReactions[i].kobs = IonicRate(Ionic, fTemperature, fReactions[i]);
 			}
 			
 			else if (fReactions[i].reactionType == 6 && ReactB == "H3O^1") {
 				k_Before = fReactions[i].scavengingCapacity;
-				fReactions[i].scavengingCapacity = IonicRate(Ionic, fReactions[i]) * HCon;
+                fReactions[i].kobs = fReactions[i].scavengingCapacity / 1E-7;
+                fReactions[i].kobs = IonicRate(Ionic, fTemperature, fReactions[i]); // Ionic Strength scaling
+				fReactions[i].scavengingCapacity = fReactions[i].kobs * HCon; //pH scaling
 			}
 			
 			else if (fReactions[i].reactionType == 6 && ReactB == "OH^-1") {
 				k_Before = fReactions[i].scavengingCapacity;
-				fReactions[i].scavengingCapacity = IonicRate(Ionic, fReactions[i]) * OHCon;
+                fReactions[i].kobs = fReactions[i].scavengingCapacity / 1E-7;
+                fReactions[i].kobs = IonicRate(Ionic, fTemperature, fReactions[i]); // Ionic Strength scaling
+				fReactions[i].scavengingCapacity = fReactions[i].kobs * OHCon;
 			}
 			
-			else {
-				G4cout << "========= "<< fReactions[i].reactionType << G4endl;
-				k_Before = fReactions[i].kobs;
-				fReactions[i].kobs = fReactions[i].kobs * 1E-7;
-				fReactions[i].kobs = IonicRate(Ionic, fReactions[i]);
+			else { // charged reactants, Type 6, not scavenged by H3O^1 or OH^-1
+                k_Before = fReactions[i].scavengingCapacity;
+                concentration = fReactions[i].scavengingCapacity / fReactions[i].kobs;
+				fReactions[i].kobs = IonicRate(Ionic, fTemperature, fReactions[i]);
+                fReactions[i].scavengingCapacity = fReactions[i].kobs * concentration;
 			}
 		}
 		
+        // not charged
+        
 		else if ((fReactions[i].reactionType == 6) && (ReactB == "H3O^1")) {
 			k_Before = fReactions[i].scavengingCapacity;
 			fReactions[i].scavengingCapacity = fReactions[i].scavengingCapacity * HCon / HCon25;
@@ -1648,7 +1790,7 @@ void TsIRTConfiguration::AdjustReactionRateForPH(G4String pHOrConcentration) {
 		fReactions[i].scavengingCapacity *= 1/s;
 	}
 	
-	G4cout << " ###-------- pH Scaling Ends ---------###" << G4endl;
+	G4cout << " ###-------- pH And Ionic Strength Scaling Ends ---------###" << G4endl;
 	G4cout << G4endl;
 }
 
@@ -2534,21 +2676,32 @@ G4double TsIRTConfiguration::IonicRate(G4double IonicStrength, G4double Rate, G4
 }
 
 
-G4double TsIRTConfiguration::IonicRate(G4double IonicStrength, TsMolecularReaction Reaction) {
+G4double TsIRTConfiguration::IonicRate(G4double IonicStrength, G4double Temperature, TsMolecularReaction Reaction) {
 	G4double a = 0.15;
 	G4int Charge1 = fMoleculesDefinition[Reaction.reactorA].charge;
 	G4int Charge2 = fMoleculesDefinition[Reaction.reactorB].charge;
 	G4int BackGround = Reaction.reactionType;
-	G4double Rate = 0.0;
-	if ( BackGround == 6 ) {
-		Rate = Reaction.scavengingCapacity;
-		Rate /= 1E-7;
-	} else {
-		Rate = Reaction.kobs;
-	}
+	G4double Rate = Reaction.kobs;
 	
 	G4double b = a * Charge1 * Charge2;
-	G4double scaleFactor = pow(10,((1.02 * Charge1 * Charge2 * ((sqrt(IonicStrength)) / (1 + sqrt(IonicStrength))))  -  (2 * b * IonicStrength)));
+    G4double DebyeHuckelA = GetDebyeHuckelA(Temperature);
+	G4double scaleFactor = pow(10,((2 * DebyeHuckelA * Charge1 * Charge2 * ((sqrt(IonicStrength)) / (1 + sqrt(IonicStrength))))  -  (2 * b * IonicStrength)));
 	G4double K = Rate * scaleFactor;
 	return K;
+}
+
+
+G4double TsIRTConfiguration::GetDielectricConstant(G4double T_celsius) {
+    return 87.74 - 0.40008 * T_celsius + 9.398e-4 * pow(T_celsius,2) - 1.41e-6 * pow(T_celsius,3);
+}
+
+G4double TsIRTConfiguration::GetDebyeHuckelA(G4double T_celsius) {
+    // Debye-Huckel constant for water
+    G4double e = 1.602e-19; //elementary charge
+    G4double N_A = 6.022e23; // Avogadros number
+    G4double eps_0 = 8.854e-12; // vacuum permitivity
+    G4double k_B = 1.38e-23; //Boltzmann constant
+    G4double eps_r = GetDielectricConstant(T_celsius);
+    G4double T_kelvin = T_celsius + 273.15;
+    return (sqrt(1000) / log(10)) * (sqrt(2) * pow(e,3) * sqrt(N_A)) / (8 * 3.14159 * pow(eps_r * eps_0 * k_B * T_kelvin,3/2));
 }

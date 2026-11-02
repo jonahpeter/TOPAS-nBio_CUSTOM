@@ -763,11 +763,11 @@ G4double TsIRTUtils::OHmDiffusionRate(G4double TKelvin) {
 
 
 G4double TsIRTUtils::WaterDiffusionRate(G4double TKelvin, G4double Diff) {
-    G4double T20 = 20 + 273.15;
+    G4double T25 = 25 + 273.15;
     G4double Ts  = TKelvin;
-    G4double DH2O_20C  = std::pow(10.,4.311 - (2.722e3/T20) + 8.565e5/std::pow(T20,2) - 1.181e8/std::pow(T20,3)) * 1e-9;
+    G4double DH2O_25C  = std::pow(10.,4.311 - (2.722e3/T25) + 8.565e5/std::pow(T25,2) - 1.181e8/std::pow(T25,3)) * 1e-9;
     G4double DH2O_T    = std::pow(10.,4.311 - (2.722e3/Ts)  + 8.565e5/std::pow(Ts,2)  - 1.181e8/std::pow(Ts,3))  * 1e-9;
-    return Diff * DH2O_T / DH2O_20C;
+    return Diff * DH2O_T / DH2O_25C;
 }
 
 

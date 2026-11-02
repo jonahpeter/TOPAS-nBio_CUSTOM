@@ -256,8 +256,8 @@ void TsEmDNAChemistry::DefineParameters()
         fScavengedCapacities.push_back(scavengingCapacity);
         fScavengerHasProducts.push_back(hasProducts);
         fScavengerProducts.push_back(Products);
-        std::cout << "-- Set scavenging capacity for molecule " << fExistingMolecules[reactorA] <<
-                    " of " << scavengingCapacity*s << " /s " << std::endl;
+       // std::cout << "-- Set scavenging capacity for molecule " << fExistingMolecules[reactorA] <<
+              //      " of " << scavengingCapacity*s << " /s " << std::endl;
     }
 
 	// Remove molecules in material named (at contact, no following a power low as First order reactions)
@@ -779,7 +779,7 @@ void TsEmDNAChemistry::ConstructReactionTable(G4DNAMolecularReactionTable*
             if ( "none" != fReactionProducts[t][u] ) // This comparison crashes if the order is fReactionProducts[t][u] != "none"
                 reactionData->AddProduct(reactions[ fReactionProducts[t][u] ] );
         }
-        std::cout << " Re-set reaction kobs to : " << fReactionRates[t]/(1e-3*m3/(mole*s)) << "/M/s" << std::endl;
+       // std::cout << " Re-set reaction kobs to : " << fReactionRates[t]/(1e-3*m3/(mole*s)) << "/M/s" << std::endl;
         theReactionTable->SetReaction(reactionData);
     }
 }

@@ -87,6 +87,10 @@ public:
 	G4double IonicRate(G4double, G4double, G4int, G4int);
 	
 	G4double GetIonicStrength(std::vector<G4double>);
+    
+    G4double GetDielectricConstant(G4double);
+    
+    G4double GetDebyeHuckelA(G4double);
 
 	inline std::map<G4String, G4int> GetMoleculeIDs() {return fMoleculesID;};
 	
@@ -233,7 +237,7 @@ public:
 	G4int GetLastMoleculeID() { return fLastMoleculeID; };
 	G4int GetLastReactionID() { return fReactionID-1; };
 	
-	G4double IonicRate(G4double, TsMolecularReaction);
+	G4double IonicRate(G4double, G4double, TsMolecularReaction);
 	
 };
 #endif
