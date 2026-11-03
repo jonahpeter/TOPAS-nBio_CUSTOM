@@ -2,6 +2,11 @@
 
 ## Here is a list of changes from vanilla TOPAS-nBio 3.0
 
+11/2/2026 moved ResolveReactionRateCoefficients();
+	CalculateContactProbabilities();
+	ResolveRemainerReactionParameters(); after pH/ionic scaling (the sampler reads reaction radii and probabilities, NOT kobs, so these must be updated from kobs before being set)
+        Affected File: TsIRTConfiguration.cc
+
 11/2/2026 initialized temperature to 25 C
         Affected File: TsIRTConfiguration.hh
 

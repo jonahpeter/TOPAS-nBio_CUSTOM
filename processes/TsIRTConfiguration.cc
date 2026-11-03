@@ -315,9 +315,6 @@ fKick(false), fAllTotallyDiffusionControlled(false)
 		AdjustReactionAndDiffusionRateForTemperature();
 	}
 	
-	ResolveReactionRateCoefficients();
-	CalculateContactProbabilities();
-	ResolveRemainerReactionParameters();
 	
 	if ( fPm->ParameterExists("Ch/"+chemistryList+"/ModelAcidPropertiesFromSubstance") ) {
 		fpHSolventConcentration = 0.0;
@@ -355,6 +352,10 @@ fKick(false), fAllTotallyDiffusionControlled(false)
 		}
 	}
 
+	ResolveReactionRateCoefficients();
+	CalculateContactProbabilities();
+	ResolveRemainerReactionParameters();
+	
 	PrintReactionsInformation();
 }
 
