@@ -2,6 +2,9 @@
 
 ## Here is a list of changes from vanilla TOPAS-nBio 3.0
 
+11/3/2026 the correction below implementing properly scaled radii yields a nan for type 3 reactions when the effective radius is below the Onsager radius. These means that contact reactions are not implemented even when TestForContactReactions is True.
+        - this only affects H3O+ + OH- so it doesn't really matter, but it should be fixed by the developers
+
 11/2/2026 moved ResolveReactionRateCoefficients();
 	CalculateContactProbabilities();
 	ResolveRemainerReactionParameters(); after pH/ionic scaling (the sampler reads reaction radii and probabilities, NOT kobs, so these must be updated from kobs before being set)
