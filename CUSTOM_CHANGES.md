@@ -2,7 +2,7 @@
 
 ## Here is a list of changes from vanilla TOPAS-nBio 3.0
 
-11/3/2026 the correction below implementing properly scaled radii yields a nan for type 3 reactions when the effective radius is below the Onsager radius. These means that contact reactions are not implemented even when TestForContactReactions is True.
+11/3/2026 the correction below implementing properly scaled radii yields a nan for type 3 reactions when the effective radius is below the Onsager radius. This means that contact reactions are not implemented even when TestForContactReactions is True.
         - this only affects H3O+ + OH- so it doesn't really matter, but it should be fixed by the developers
 
 11/2/2026 moved ResolveReactionRateCoefficients();
@@ -52,13 +52,6 @@ Also divided by reference values for electron, H3O, and OHm
     It also seems that not all the diffusion coefficients return their user input values at 25C.
     This has a significant influence on the final H yields, but not much else. Material balance is still satisfied.
 
-
-TO DO - add reaction between CN^-1 and H
-
-TO DO - add temperature dependence for HCN and Formate reactions
-Lin 2004: J. Phys. Chem. A 2004, 108, 8287-829510.1021/jp048854j
-    contains temp. data for OH + HCOO^- in Fig. 6
-
 7/1/24 - Fixed pH and ionic strength scaling for Type 6 reactions that are scavenged by something other than H3O^+1 or OH^-1.
         Affected File: TsIRTConfiguration.cc
         Affected Functions: TsIRTConfiguration::AdjustReactionAndDiffusionRateForTemperature(), TsIRTConfiguration::IonicRate()
@@ -67,7 +60,7 @@ Lin 2004: J. Phys. Chem. A 2004, 108, 8287-829510.1021/jp048854j
         Affected File: TsIRTConfiguration.cc
         Affected Function: TsIRTConfiguration::AdjustReactionAndDiffusionRateForTemperature()
 
-6/29/24 - Incorporate temperature dependence into ionic strength scaling from first principles.
+6/29/24 - Incorporated temperature dependence into ionic strength scaling from first principles.
         Affected File: TsIRTConfiguration.cc
         Affected Function: TsIRTConfiguration::IonicRate 
         
